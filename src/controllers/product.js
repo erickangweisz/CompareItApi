@@ -1,18 +1,18 @@
-const pccomponentes = require('../scrapers/pccomponentes');
+const Pccomponentes = require('../scrapers/pccomponentes');
+const SearchParams = require('../models/searchParams');
 
 const scrapers = {};
 
 async function search(req, res) {
-  //TODO: create searchParams class model
-  const searchParams = {
-    term: req.query.term,
-    shops: req.query.shops,
-    nProductsPerShop: req.query.nProductsPerShop
-  };
+  const searchParams = new SearchParams(
+    req.query.term,
+    req.query.shops,
+    req.query.nProductsPerShop
+  );
 
   console.log('SearchParams:', searchParams);
   
-  scrapers.pccomponentes = new pccomponentes(searchParams.term, searchParams.nProductsPerShop);
+  scrapers.pccomponentes = new Pccomponentes(searchParams.term, searchParams.nProductsPerShop);
 
   let products = [];
 
