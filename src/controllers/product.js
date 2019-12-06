@@ -1,23 +1,23 @@
 const pccomponentes = require('../scrapers/pccomponentes');
 
-const scrapers = {
-  pccomponentes: new pccomponentes()
-};
+const scrapers = {};
 
 async function search(req, res) {
   //TODO: create searchParams class model
   const searchParams = {
     term: req.params.term,
     shops: ['pccomponentes'], //TODO: get this from req.params
-    productsPerShop: 1
+    nProductsPerShop: 3 //TODO: get this from req.params
   };
 
   console.log('SearchParams:', searchParams);
+  
+  scrapers.pccomponentes = new pccomponentes(searchParams.term, searchParams.nProductsPerShop);
 
   let products = [];
 
   try {
-    products = await getProducts(searchParams);
+    products = await getProducts(searchParams.shops);
   } catch (e) {
     console.error(e);
   }
@@ -32,17 +32,17 @@ async function search(req, res) {
 
 /**
  * Perform the search on the specified shops
- * @param {{}} searchParams
+ * @param {[]} shops
  * @returns {Product[]}
  */
-async function getProducts(searchParams) {
+async function getProducts(shops) {
   let products = [],
     scrappedProds = [];
 
-  for (let shopId of searchParams.shops) {
+  for (let shopId of shops) {
     try {
-      scrappedProds = await scrapers[shopId].getProducts(searchParams.term, searchParams.productsPerShop); //This is returning a string (response obj?)
-      products = [...products, scrappedProds]; //TODO: test this: product.push(...scrappedProds);
+      scrappedProds = await scrapers[shopId].getProducts(); //This is returning a string (response obj?)
+      products = [...products, ...scrappedProds]; //TODO: test this: product.push(...scrappedProds);
     } catch (e) {
       console.error(`Error scraping shop ${shopId}:`, e);
     }
