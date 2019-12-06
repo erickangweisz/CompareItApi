@@ -1,7 +1,7 @@
-const Router = require('express');
+const express = require('express');
 const ProductController = require('../controllers/product');
 
-const router = Router();
+const router = express.Router();
 
 router.get(
     '/search/:term',
