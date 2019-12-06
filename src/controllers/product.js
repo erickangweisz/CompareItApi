@@ -1,63 +1,53 @@
 const pccomponentes = require('../scrapers/pccomponentes');
 
 const scrapers = {
-    pccomponentes: new pccomponentes()
+  pccomponentes: new pccomponentes()
 };
 
 async function search(req, res) {
+  const searchParams = {
+    term: req.params.term,
+    shops: ['pccomponentes'] //TODO: get this from req.params
+  };
 
-    //TODO: esto es el argumento de una funcion, que llamara a los scrappers necesarios
-    const searchParams = {
-        term: req.params.term,
-        shops: ['pccomponentes'], //ID tienda (un identificador que acordemos)
-    };
+  console.log('searchParams', searchParams);
 
-    /**
-     * Perform the search on the specified shops
-     * @param {number[]} shops array of shop IDs
-     */
-    async function getProducts(shops) {
-        let products = [], scrappedProds = [];
+  /**
+   * Perform the search on the specified shops
+   * @param {string[]} shops array of shop IDs
+   */
+  async function getProducts(shops) {
+    let products = [],
+      scrappedProds = [];
 
-        //shops.forEach(async shopId => {
-            try {
-                scrappedProds = await scrapers['pccomponentes']
-                    .getProducts(searchParams.term);
-
-                    //console.log({scrappedProds, type: typeof scrappedProds});
-                    
-            } catch(e) {
-                console.error(e);
-            }
-
-            products = [...products, ...scrappedProds]; //TODO: test this: product.push(...scrappedProds);
-        //});
-
-        return products;
+    for (let shopId of shops) {
+      try {
+        scrappedProds = await scrapers[shopId].getProducts(searchParams.term); //This is returning a string (response obj?)
+        products = [...products, scrappedProds]; //TODO: test this: product.push(...scrappedProds);
+      } catch (e) {
+        console.error(`Error scraping shop ${shopId}:`, e);
+      }
     }
 
-    let product = []
+    return products;
+  }
 
-    try {   
-        products = await getProducts(searchParams.shops);
-    } catch(e) {
-        console.error(e);
-    }
+  let products = [];
 
-    const response = {
-        resp: {
-            products, //TODO aqui iran los "new Product()" generados por el scrapper
-        },
-        msg: 'Todo en orden, puede reanudar la marcha'
-    };
+  try {
+    products = await getProducts(searchParams.shops);
+  } catch (e) {
+    console.error(e);
+  }
 
-    console.log('term', searchParams.term);
-    
-    //TODO: call scrapper with term
+  const response = {
+    resp: {products},
+    msg: ''
+  };
 
-    return res.status(200).send(response);
+  return res.status(200).send(response);
 }
 
 module.exports = {
-    search
+  search
 };
