@@ -5,13 +5,13 @@ const Product = require('../models/product');
 const baseUrl = 'https://www.pccomponentes.com';
 
 class Scraper {
-  async getProducts(term) {
+  async getProducts(term, nProducts) {
     let products = [],
       html = '';
 
     try {
       html = await requestPromise(`${baseUrl}/buscar/?query=${term}`);
-      products = this.scrapProducts(html);
+      products = this.scrapProducts(html, nProducts);
     } catch (e) {
       console.error(e);
     }
@@ -19,12 +19,12 @@ class Scraper {
     return products;
   }
 
-  scrapProducts(html) {
+  scrapProducts(html, nProducts) {
     const products = [],
       $ = cheerio.load(html);
 
     $('.tarjeta-articulo')
-      .slice(0, 2) //TODO: take second parameter form searchParams (to be sended to the scraper)
+      .slice(0, nProducts)
       .each((i, productHTML) => {
         const name = $(productHTML).data('name');
         const price = $(productHTML).data('price');

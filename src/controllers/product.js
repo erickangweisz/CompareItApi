@@ -8,7 +8,8 @@ async function search(req, res) {
   //TODO: create searchParams class model
   const searchParams = {
     term: req.params.term,
-    shops: ['pccomponentes'] //TODO: get this from req.params
+    shops: ['pccomponentes'], //TODO: get this from req.params
+    productsPerShop: 1
   };
 
   console.log('SearchParams:', searchParams);
@@ -40,7 +41,7 @@ async function getProducts(searchParams) {
 
   for (let shopId of searchParams.shops) {
     try {
-      scrappedProds = await scrapers[shopId].getProducts(searchParams.term); //This is returning a string (response obj?)
+      scrappedProds = await scrapers[shopId].getProducts(searchParams.term, searchParams.productsPerShop); //This is returning a string (response obj?)
       products = [...products, scrappedProds]; //TODO: test this: product.push(...scrappedProds);
     } catch (e) {
       console.error(`Error scraping shop ${shopId}:`, e);
