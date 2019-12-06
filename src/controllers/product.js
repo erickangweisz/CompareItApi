@@ -32,7 +32,7 @@ async function search(req, res) {
 /**
  * Perform the search on the specified shops
  * @param {{}} searchParams
- * @returns {[]} products
+ * @returns {Product[]}
  */
 async function getProducts(searchParams) {
   let products = [],

@@ -1,5 +1,8 @@
 const requestPromise = require('request-promise');
 const cheerio = require('cheerio');
+const Product = require('../models/product');
+
+const baseUrl = 'https://www.pccomponentes.com';
 
 class Scraper {
   async getProducts(term) {
@@ -7,22 +10,26 @@ class Scraper {
 
     try {
       products = await requestPromise(
-        `https://www.pccomponentes.com/buscar/?query=${term}`,
+        `${baseUrl}/buscar/?query=${term}`,
         (err, res, html) => {
           if (!err && res.statusCode == 200) {
             const $ = cheerio.load(html);
             const products = [];
 
-            $('article')
-              .slice(0, 1)
-              .each((i, article) => {
-                const art = $(article).text();
-                //TODO: get correct elements
-                //TODO: "new Product()" model should be used here
-                products.push(art);
+            $('.tarjeta-articulo')
+              .slice(0, 2)
+              .each((i, productHTML) => {
+                const name = $(productHTML).data('name');
+                const price = $(productHTML).data('price');
+                const url = `${baseUrl}${$(productHTML)
+                  .find('.enlace-superpuesto')
+                  .attr('href')}`;
+
+                const product = new Product(name, price, url);
+                products.push(product);
               });
 
-            console.error(products);
+            console.log('Products:', products);
             return products;
           }
         }
