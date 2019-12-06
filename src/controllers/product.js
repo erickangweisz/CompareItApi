@@ -5,9 +5,9 @@ const scrapers = {};
 async function search(req, res) {
   //TODO: create searchParams class model
   const searchParams = {
-    term: req.params.term,
-    shops: ['pccomponentes'], //TODO: get this from req.params
-    nProductsPerShop: 3 //TODO: get this from req.params
+    term: req.query.term,
+    shops: req.query.shops,
+    nProductsPerShop: req.query.nProductsPerShop
   };
 
   console.log('SearchParams:', searchParams);
