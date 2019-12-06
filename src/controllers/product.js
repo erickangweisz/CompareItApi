@@ -5,37 +5,18 @@ const scrapers = {
 };
 
 async function search(req, res) {
+  //TODO: create searchParams class model
   const searchParams = {
     term: req.params.term,
     shops: ['pccomponentes'] //TODO: get this from req.params
   };
 
-  console.log('searchParams', searchParams);
-
-  /**
-   * Perform the search on the specified shops
-   * @param {string[]} shops array of shop IDs
-   */
-  async function getProducts(shops) {
-    let products = [],
-      scrappedProds = [];
-
-    for (let shopId of shops) {
-      try {
-        scrappedProds = await scrapers[shopId].getProducts(searchParams.term); //This is returning a string (response obj?)
-        products = [...products, scrappedProds]; //TODO: test this: product.push(...scrappedProds);
-      } catch (e) {
-        console.error(`Error scraping shop ${shopId}:`, e);
-      }
-    }
-
-    return products;
-  }
+  console.log('SearchParams:', searchParams);
 
   let products = [];
 
   try {
-    products = await getProducts(searchParams.shops);
+    products = await getProducts(searchParams);
   } catch (e) {
     console.error(e);
   }
@@ -46,6 +27,27 @@ async function search(req, res) {
   };
 
   return res.status(200).send(response);
+}
+
+/**
+ * Perform the search on the specified shops
+ * @param {{}} searchParams
+ * @returns {[]} products
+ */
+async function getProducts(searchParams) {
+  let products = [],
+    scrappedProds = [];
+
+  for (let shopId of searchParams.shops) {
+    try {
+      scrappedProds = await scrapers[shopId].getProducts(searchParams.term); //This is returning a string (response obj?)
+      products = [...products, scrappedProds]; //TODO: test this: product.push(...scrappedProds);
+    } catch (e) {
+      console.error(`Error scraping shop ${shopId}:`, e);
+    }
+  }
+
+  return products;
 }
 
 module.exports = {
