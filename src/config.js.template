@@ -1,0 +1,9 @@
+const config = {
+    mode: process.env.MODE || 'default',
+    api: {
+        port: process.env.API_PORT || '3087',
+        ip: process.env.API_IP || 'localhost',
+    },
+    privateKey: process.env.PRIVATE_KEY || 'key_secret',
+}
+module.exports = config
