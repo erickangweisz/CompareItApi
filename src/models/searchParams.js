@@ -1,7 +1,7 @@
 class SearchParams {
     /**
      * SearchParams
-     * @param {string} name
+     * @param {string} term
      * @param {string{}} shops
      * @param {number} nProductsPerShop
      */
