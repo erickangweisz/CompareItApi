@@ -1,9 +1,9 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const httpHeaders = require('./middlewares/http-header');
 const routes = require('./routes');
 
 const app = express();
-//app.use(bodyParser.urlencoded({ extended: false }));
+app.use(httpHeaders);
 app.use(routes);
 
 module.exports = app;
