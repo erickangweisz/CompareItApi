@@ -1,8 +1,7 @@
-const requestPromise = require('request-promise');
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 const Product = require('../models/product');
 
-const baseUrl = 'https://www.pccomponentes.com';
+const domain = 'https://www.pccomponentes.com';
 
 class Scraper {
   constructor(term, nProducts) {
@@ -11,12 +10,10 @@ class Scraper {
   }
 
   async getProducts() {
-    let products = [],
-      html = '';
+    let products = [];
 
     try {
-      html = await requestPromise(`${baseUrl}/buscar/?query=${this.term}`);
-      products = this.scrapProducts(html);
+      products = this.scrapProductsFromBrowser();
     } catch (e) {
       console.error(e);
     }
@@ -24,23 +21,32 @@ class Scraper {
     return products;
   }
 
-  scrapProducts(html) {
-    const products = [],
-      $ = cheerio.load(html);
+  async scrapProductsFromBrowser() {
+    try {
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
 
-    $('.tarjeta-articulo')
-      .slice(0, this.nProducts)
-      .each((i, productHTML) => {
-        const name = $(productHTML).data('name');
-        const price = $(productHTML).data('price');
-        const url = `${baseUrl}${$(productHTML)
-          .find('.enlace-superpuesto')
-          .attr('href')}`;
+      await page.setViewport({ width: 1280, height: 800 });
+      await page.goto(domain, { timeout: 0 }); // TODO: Check timeout value
+      await page.type('.ais-SearchBox-input', this.term);
 
-        products.push(new Product(name, price, url));
+      const products = await page.evaluate(() => {
+        const links = Array.from(document.querySelectorAll('.ais-Hits-item'));
+        return links.map(link => {
+          return { // TODO: wrap this with Product class to return it
+            name: link.querySelector('.algolia-analytics-link').getAttribute('data-name'),
+            price: link.querySelector('.algolia-analytics-link').getAttribute('data-price'),
+            url: link.querySelector('.algolia-analytics-link').href,
+            image: link.querySelector('img').src
+          }
+        })
       });
+      browser.close();
 
-    return products;
+      return products.slice(0, Number(this.nProducts));
+    } catch (err) {
+      console.log(err);
+    }
   }
 }
 
