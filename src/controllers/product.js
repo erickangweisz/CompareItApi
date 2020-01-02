@@ -9,8 +9,6 @@ async function search(req, res) {
     req.query.shops,
     req.query.nProductsPerShop
   );
-
-  console.log('SearchParams:', searchParams);
   
   scrapers.pccomponentes = new Pccomponentes(searchParams.term, searchParams.nProductsPerShop);
 
@@ -18,12 +16,12 @@ async function search(req, res) {
 
   try {
     products = await getProducts(searchParams.shops);
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
   }
 
   const response = {
-    resp: {products},
+    resp: { products },
     msg: ''
   };
 
@@ -41,7 +39,7 @@ async function getProducts(shops) {
 
   for (let shopId of shops) {
     try {
-      scrappedProds = await scrapers[shopId].getProducts(); //This is returning a string (response obj?)
+      scrappedProds = await scrapers[shopId].getProducts(); // This is returning a string (response obj?)
       products = [...products, ...scrappedProds]; //TODO: test this: product.push(...scrappedProds);
     } catch (e) {
       console.error(`Error scraping shop ${shopId}:`, e);
