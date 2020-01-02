@@ -4,11 +4,14 @@ class Product {
    * @param {string} name
    * @param {number} price
    * @param {string} url
-   */
-  constructor(name, price, url) {
+   * @param {string} image
+  */
+  
+  constructor(name, price, url, image) {
     this.name = name;
     this.price = price;
     this.url = url;
+    this.image = image;
   }
 }
 
