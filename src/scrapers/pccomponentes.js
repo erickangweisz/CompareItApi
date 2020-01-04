@@ -27,8 +27,9 @@ class Scraper {
       const page = await browser.newPage();
 
       await page.setViewport({ width: 1280, height: 800 });
-      await page.goto(domain, { timeout: 0 }); // TODO: Check timeout value
+      await page.goto(domain, { timeout: 3000000 }); // TODO: Check timeout value
       await page.type('.ais-SearchBox-input', this.term);
+      await page.waitForSelector('.ais-Hits-item');
 
       const products = await page.evaluate(() => {
         const links = Array.from(document.querySelectorAll('.ais-Hits-item'));
@@ -41,8 +42,7 @@ class Scraper {
           }
         })
       });
-      browser.close();
-
+      await browser.close();
       return products.slice(0, Number(this.nProducts));
     } catch (err) {
       console.log(err);
