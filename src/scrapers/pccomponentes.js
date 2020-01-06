@@ -38,7 +38,8 @@ class Scraper {
             name: link.querySelector('.algolia-analytics-link').getAttribute('data-name'),
             price: link.querySelector('.algolia-analytics-link').getAttribute('data-price'),
             url: link.querySelector('.algolia-analytics-link').href,
-            image: link.querySelector('img').src
+            image: link.querySelector('img').src,
+            shopname: 'pccomponentes.com'
           }
         })
       });

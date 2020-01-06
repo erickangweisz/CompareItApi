@@ -5,13 +5,15 @@ class Product {
    * @param {number} price
    * @param {string} url
    * @param {string} image
+   * @param {string} shopname
   */
   
-  constructor(name, price, url, image) {
+  constructor(name, price, url, image, shopname) {
     this.name = name;
     this.price = price;
     this.url = url;
     this.image = image;
+    this.shopname = shopname;
   }
 }
 
