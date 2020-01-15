@@ -44,7 +44,7 @@ class Scraper {
         })
       });
       await browser.close();
-      return products.slice(0, Number(this.nProducts));
+      return products.slice(0, Number(this.nProducts)); // TODO: Apply slice before.
     } catch (err) {
       console.log(err);
     }
