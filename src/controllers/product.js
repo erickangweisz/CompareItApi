@@ -1,4 +1,5 @@
 const Pccomponentes = require('../scrapers/pccomponentes');
+const Amazon = require('../scrapers/amazon');
 const SearchParams = require('../models/searchParams');
 
 const scrapers = {};
@@ -11,6 +12,7 @@ async function search(req, res) {
   );
   
   scrapers.pccomponentes = new Pccomponentes(searchParams.term, searchParams.nProductsPerShop);
+  scrapers.amazon = new Amazon(searchParams.term, searchParams.nProductsPerShop);
 
   let products = [];
 
@@ -37,12 +39,14 @@ async function getProducts(shops) {
   let products = [],
     scrappedProds = [];
 
-  for (let shopId of shops) {
+  for (let shopIds of shops) {
     try {
-      scrappedProds = await scrapers[shopId].getProducts(); // This is returning a string (response obj?)
-      products = [...products, ...scrappedProds]; //TODO: test this: product.push(...scrappedProds);
+      for (let i=0; i<shopIds.split(',').length; i++) {
+        scrappedProds = await scrapers[shopIds.split(',')[i]].getProducts(); // This is returning a string (response obj?)
+        products = [...products, ...scrappedProds]; //TODO: test this: product.push(...scrappedProds);
+      }
     } catch (e) {
-      console.error(`Error scraping shop ${shopId}:`, e);
+      console.error(`Error scraping shop ${shopIds}:`, e);
     }
   }
 
