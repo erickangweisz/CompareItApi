@@ -6,48 +6,55 @@ const domain = 'https://www.pccomponentes.com';
 class Scraper {
   constructor(term, nProducts) {
     this.term = term;
-    this.nProducts = nProducts;
+    this.nProducts = +nProducts;
   }
 
   async getProducts() {
     let products = [];
 
     try {
-      products = this.scrapProductsFromBrowser();
+      const browser = await puppeteer.launch({
+        defaultViewport: {width: 1280, height: 800}
+      });
+      const page = await browser.newPage();
+      //page.on('console', consoleObj => console.log(consoleObj.text())); //Needed to show logs from inside page.evaluate() to the node console
+
+      await page.goto(domain);
+      await page.type('.ais-SearchBox-input', this.term);
+      await page.waitForSelector('.ais-Hits-item');
+
+      products = await page.evaluate(this.scrapProducts, this.nProducts);
+
+      await browser.close();
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
 
     return products;
   }
 
-  async scrapProductsFromBrowser() {
-    try {
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
+  /**
+   * Callback for page.evaluate()
+   * Se tendria que hacer una funcion de estas por cada tienda, ya que los valores a scrapear pueden estar en distintos sitios
+   * @param {number} nProducts
+   */
+  scrapProducts(nProducts) {
+    const productElements = Array.from(
+      document.querySelectorAll('.ais-Hits-item')
+    ).slice(0, nProducts);
 
-      await page.setViewport({ width: 1280, height: 800 });
-      await page.goto(domain, { timeout: 3000000 }); // TODO: Check timeout value
-      await page.type('.ais-SearchBox-input', this.term);
-      await page.waitForSelector('.ais-Hits-item');
+    return productElements.map(pe => {
+      var link = pe.querySelector('.algolia-analytics-link');
 
-      const products = await page.evaluate(() => {
-        const links = Array.from(document.querySelectorAll('.ais-Hits-item'));
-        return links.map(link => {
-          return { // TODO: wrap this with Product class to return it
-            name: link.querySelector('.algolia-analytics-link').getAttribute('data-name'),
-            price: link.querySelector('.algolia-analytics-link').getAttribute('data-price'),
-            url: link.querySelector('.algolia-analytics-link').href,
-            image: link.querySelector('img').src,
-            shopname: 'pccomponentes.com'
-          }
-        })
-      });
-      await browser.close();
-      return products.slice(0, Number(this.nProducts)); // TODO: Apply slice before.
-    } catch (err) {
-      console.log(err);
-    }
+      // TODO: wrap this with Product class to return it
+      return {
+        name: link.getAttribute('data-name'),
+        price: link.getAttribute('data-price'),
+        url: link.href,
+        image: pe.querySelector('img').src,
+        shopname: 'pccomponentes.com' //TODO: send imagotipo url instead
+      };
+    });
   }
 }
 
