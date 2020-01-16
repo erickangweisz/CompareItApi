@@ -10,9 +10,15 @@ async function search(req, res) {
     req.query.shops,
     req.query.nProductsPerShop
   );
-  
-  scrapers.pccomponentes = new Pccomponentes(searchParams.term, searchParams.nProductsPerShop);
-  scrapers.amazon = new Amazon(searchParams.term, searchParams.nProductsPerShop);
+
+  scrapers.pccomponentes = new Pccomponentes(
+    searchParams.term,
+    searchParams.nProductsPerShop
+  );
+  scrapers.amazon = new Amazon(
+    searchParams.term,
+    searchParams.nProductsPerShop
+  );
 
   let products = [];
 
@@ -23,7 +29,7 @@ async function search(req, res) {
   }
 
   const response = {
-    resp: { products },
+    resp: {products},
     msg: ''
   };
 
@@ -41,7 +47,7 @@ async function getProducts(shops) {
 
   for (let shopIds of shops) {
     try {
-      for (let i=0; i<shopIds.split(',').length; i++) {
+      for (let i = 0; i < shopIds.split(',').length; i++) {
         scrappedProds = await scrapers[shopIds.split(',')[i]].getProducts(); // This is returning a string (response obj?)
         products = [...products, ...scrappedProds]; //TODO: test this: product.push(...scrappedProds);
       }
