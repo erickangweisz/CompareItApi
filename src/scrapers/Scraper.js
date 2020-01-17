@@ -1,42 +1,33 @@
 const puppeteer = require('puppeteer');
 
-/** Add every shop here */
-const shops = {
-  pcComponentes: require('./pccomponentes')
+const shopScrapers = {
+  //Add every shop scraper here
+  pccomponentes: require('./pccomponentes')
 };
 
-class Scraper {
-  constructor(term, nProducts, shops = ['pcComponentes']) {
-    this.term = term;
-    this.nProducts = +nProducts;
-    this.shops = shops; //TODO: keys of the shops to be scraped
+async function scrapProducts(term, shops = ['pcComponentes'], nProducts) {
+  let products = [];
+
+  try {
+    const browser = await puppeteer.launch({
+      defaultViewport: {width: 1280, height: 800}
+    });
+    const page = await browser.newPage();
+    //Show logs from inside page.evaluate() to the node console
+    //page.on('console', consoleObj => console.log(consoleObj.text()));
+
+    for (const shopKey of shops)
+      products = [
+        ...products,
+        ...(await shopScrapers[shopKey](page, term, nProducts))
+      ];
+
+    await browser.close();
+  } catch (e) {
+    console.log(e);
   }
 
-  async getProducts() {
-    let products = [];
-
-    try {
-      const browser = await puppeteer.launch({
-        defaultViewport: {width: 1280, height: 800}
-      });
-      const page = await browser.newPage();
-      //Show logs from inside page.evaluate() to the node console
-      //page.on('console', consoleObj => console.log(consoleObj.text()));
-
-      this.shops.forEach(async shopKey => {
-        products = [
-          ...products,
-          ...shops[shopKey](page, this.term, this.nProducts)
-        ];
-      });
-
-      await browser.close();
-    } catch (e) {
-      console.log(e);
-    }
-
-    return products;
-  }
+  return products;
 }
 
-module.exports = Scraper;
+module.exports = scrapProducts;
