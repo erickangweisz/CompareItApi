@@ -5,7 +5,7 @@ const shopScrapers = {
   pccomponentes: require('./pccomponentes')
 };
 
-async function scrapProducts(term, shops = ['pcComponentes'], nProducts) {
+async function scrapProducts(term, shops, nProducts) {
   let products = [];
 
   try {
