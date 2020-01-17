@@ -1,7 +1,5 @@
-const Pccomponentes = require('../scrapers/pccomponentes');
 const SearchParams = require('../models/searchParams');
-
-const scrapers = {};
+const scrapProducts = require('../scrapers/Scraper');
 
 async function search(req, res) {
   const searchParams = new SearchParams(
@@ -10,16 +8,16 @@ async function search(req, res) {
     req.query.nProductsPerShop
   );
 
-  console.log('SearchParams:', searchParams);
-  
-  scrapers.pccomponentes = new Pccomponentes(searchParams.term, searchParams.nProductsPerShop);
-
   let products = [];
 
   try {
-    products = await getProducts(searchParams.shops);
-  } catch (e) {
-    console.error(e);
+    products = await scrapProducts(
+      searchParams.term,
+      searchParams.shops,
+      searchParams.nProductsPerShop
+    );
+  } catch (err) {
+    console.error(err);
   }
 
   const response = {
@@ -28,27 +26,6 @@ async function search(req, res) {
   };
 
   return res.status(200).send(response);
-}
-
-/**
- * Perform the search on the specified shops
- * @param {[]} shops
- * @returns {Product[]}
- */
-async function getProducts(shops) {
-  let products = [],
-    scrappedProds = [];
-
-  for (let shopId of shops) {
-    try {
-      scrappedProds = await scrapers[shopId].getProducts(); //This is returning a string (response obj?)
-      products = [...products, ...scrappedProds]; //TODO: test this: product.push(...scrappedProds);
-    } catch (e) {
-      console.error(`Error scraping shop ${shopId}:`, e);
-    }
-  }
-
-  return products;
 }
 
 module.exports = {

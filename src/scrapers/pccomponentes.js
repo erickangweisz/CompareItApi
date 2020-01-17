@@ -1,47 +1,40 @@
-const requestPromise = require('request-promise');
-const cheerio = require('cheerio');
-const Product = require('../models/product');
+/**
+ * Navigate to shop, perform search and scrapProducts
+ * @param page puppeteer browser.newPage() instance
+ * @param {string} searchTerm
+ * @param {number} nProducts
+ */
+async function scrapShop(page, searchTerm, nProducts) {
+  let products = [];
 
-const baseUrl = 'https://www.pccomponentes.com';
+  try {
+    await page.goto('https://www.pccomponentes.com');
+    await page.type('.ais-SearchBox-input', searchTerm);
+    await page.waitForSelector('.ais-Hits-item');
 
-class Scraper {
-  constructor(term, nProducts) {
-    this.term = term;
-    this.nProducts = nProducts;
-  }
+    products = await page.evaluate(nProducts => {
+      const productElements = Array.from(
+        document.querySelectorAll('.ais-Hits-item')
+      ).slice(0, nProducts);
 
-  async getProducts() {
-    let products = [],
-      html = '';
+      return productElements.map(pe => {
+        var link = pe.querySelector('.algolia-analytics-link');
 
-    try {
-      html = await requestPromise(`${baseUrl}/buscar/?query=${this.term}`);
-      products = this.scrapProducts(html);
-    } catch (e) {
-      console.error(e);
-    }
-
-    return products;
-  }
-
-  scrapProducts(html) {
-    const products = [],
-      $ = cheerio.load(html);
-
-    $('.tarjeta-articulo')
-      .slice(0, this.nProducts)
-      .each((i, productHTML) => {
-        const name = $(productHTML).data('name');
-        const price = $(productHTML).data('price');
-        const url = `${baseUrl}${$(productHTML)
-          .find('.enlace-superpuesto')
-          .attr('href')}`;
-
-        products.push(new Product(name, price, url));
+        // TODO: wrap this with Product class to return it
+        return {
+          name: link.getAttribute('data-name'),
+          price: link.getAttribute('data-price'),
+          url: link.href,
+          image: pe.querySelector('img').src,
+          shopname: 'pccomponentes.com' //TODO: send imagotipo url instead
+        };
       });
-
-    return products;
+    }, nProducts);
+  } catch (e) {
+    console.log(e);
   }
+
+  return products;
 }
 
-module.exports = Scraper;
+module.exports = scrapShop;
