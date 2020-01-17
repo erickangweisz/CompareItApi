@@ -5,6 +5,13 @@ const shopScrapers = {
   pccomponentes: require('./pccomponentes')
 };
 
+/**
+ * Init puppeteer. Scrap products from every given shop using its specific function.
+ * @param {string} term
+ * @param {string[]} shops
+ * @param {number} nProducts
+ * @returns {[]} products
+ */
 async function scrapProducts(term, shops, nProducts) {
   let products = [];
 
