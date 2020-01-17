@@ -5,28 +5,36 @@
  * @param {number} nProducts
  */
 async function scrapShop(page, searchTerm, nProducts) {
-  await page.goto('https://www.pccomponentes.com');
-  await page.type('.ais-SearchBox-input', searchTerm);
-  await page.waitForSelector('.ais-Hits-item');
+  let products = [];
 
-  return await page.evaluate(nProducts => {
-    const productElements = Array.from(
-      document.querySelectorAll('.ais-Hits-item')
-    ).slice(0, nProducts);
+  try {
+    await page.goto('https://www.pccomponentes.com');
+    await page.type('.ais-SearchBox-input', searchTerm);
+    await page.waitForSelector('.ais-Hits-item');
 
-    return productElements.map(pe => {
-      var link = pe.querySelector('.algolia-analytics-link');
+    products = await page.evaluate(nProducts => {
+      const productElements = Array.from(
+        document.querySelectorAll('.ais-Hits-item')
+      ).slice(0, nProducts);
 
-      // TODO: wrap this with Product class to return it
-      return {
-        name: link.getAttribute('data-name'),
-        price: link.getAttribute('data-price'),
-        url: link.href,
-        image: pe.querySelector('img').src,
-        shopname: 'pccomponentes.com' //TODO: send imagotipo url instead
-      };
-    });
-  }, nProducts);
+      return productElements.map(pe => {
+        var link = pe.querySelector('.algolia-analytics-link');
+
+        // TODO: wrap this with Product class to return it
+        return {
+          name: link.getAttribute('data-name'),
+          price: link.getAttribute('data-price'),
+          url: link.href,
+          image: pe.querySelector('img').src,
+          shopname: 'pccomponentes.com' //TODO: send imagotipo url instead
+        };
+      });
+    }, nProducts);
+  } catch (e) {
+    console.log(e);
+  }
+
+  return products;
 }
 
 module.exports = scrapShop;
