@@ -26,7 +26,8 @@ async function scrapShop(page, searchTerm, nProducts) {
           price: link.getAttribute('data-price'),
           url: link.href,
           image: pe.querySelector('img').src,
-          shopname: 'pccomponentes.com' //TODO: send imagotipo url instead
+          shopImgURL: 'imag/pccomponentes',
+          shopName: 'PcComponentes'
         };
       });
     }, nProducts);
